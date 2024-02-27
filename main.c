@@ -31,13 +31,17 @@ float randomFloat(void) {
     return ((float) rand() / (float) RAND_MAX);
 }
 
-float costFunction(float w, float b) {
+float sigmoidf(float x) {
+    return 1 / (1 + exp(-x));
+}
+
+float costFunction(float w) {
 
     float result = 0.0f;
 
     for (int i = 0; i < trainCount; i++) {
         float x = train[i][0];
-        float yhat = (x * w) + b;
+        float yhat = (x * w);
         float error = yhat - train[i][1];
         result += error*error;
     }
@@ -47,47 +51,39 @@ float costFunction(float w, float b) {
     return result;
 }
 
-float derivativeOf(float (*cost)(float, float), float w, float b, bool bias) {
+float derivativeOf(float (*cost)(float), float w) {
     float epsilon = 1e-3;
-    float costwb = cost(w, b);
-
-    if (!bias) {
-        return (cost(w + epsilon, b) - costwb) / epsilon;
-    } else {
-        return (cost(w, b + epsilon) - costwb) / epsilon;
-    }
-    
+    return (cost(w + epsilon) - cost(w)) / epsilon;
 }
 
-void modelPerformance(float w, float b) {
+void modelPerformance(float w) {
     for (int i = 0; i < testCount; i++) {
         float x = test[i][0];
-        float yhat = (x * w) + b;
+        float yhat = (x * w);
         
-        printf("Actual: %d, Predicted: %d\n", (int)test[i][1], (int)yhat);
+        printf("Actual: %4d, Predicted: %4d\n", (int)test[i][1], (int)yhat);
     }
 }
 
 void main() {
     srand(100);
-    float w = randomFloat()*10.0f;
-    float b = randomFloat()*5.0f;
+    float w = randomFloat();
 
-    float dw, db;
+    float dw;
     float cost;
-    float learningRate = 1e-3;
+    float learningRate = 1e-4;
     int steps = 0;
 
-    while (steps < 500) {
-        printf("weight: %f,  bias: %f\n", w, b);
-        dw = derivativeOf(costFunction, w, b, false);
-        db = derivativeOf(costFunction, w, b, true);
+    while (steps < 5000) {
+        dw = derivativeOf(costFunction, w);
         w -= (learningRate * dw);
-        b -= (learningRate * db);
         steps += 1;
 
+        // adjusting the learning rate as the training progresses
+        if ((steps % 1000) == 0) {
+            learningRate /= 10;
+        }
     }
     printf("%f\n", w);
-    printf("%f\n", b);
-    modelPerformance(w, b);
+    modelPerformance(w);
 }

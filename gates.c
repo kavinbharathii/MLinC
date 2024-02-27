@@ -16,14 +16,14 @@ float randomFloat(void) {
     return ((float) rand() / (float) RAND_MAX);
 }
 
-float costFunction(float w1, float w2) {
+float costFunction(float w1, float w2, float b) {
 
     float result = 0.0f;
 
     for (int i = 0; i < trainCount; i++) {
         float x1 = train[i][0];
         float x2 = train[i][1];
-        float yhat = (x1 * w1) + (x2 * w2);
+        float yhat = (x1 * w1) + (x2 * w2) + b;
         float error = yhat - train[i][2];
         result += error*error;
     }
@@ -33,25 +33,13 @@ float costFunction(float w1, float w2) {
     return result;
 }
 
-float derivativeOf(float (*cost)(float, float), float w1, float w2, bool token) {
-    float epsilon = 1e-3;
-    float costwb = cost(w1, w2);
-
-    if (!token) {
-        return (cost(w1 + epsilon, w2) - costwb) / epsilon;
-    } else {
-        return (cost(w1, w2 + epsilon) - costwb) / epsilon;
-    }
-    
-}
-
-void modelPerformance(float w1, float w2, char token[]) {
-    printf("%s: w1: %f,  w2: %f\n", token, w1, w2);
+void modelPerformance(float w1, float w2, float b, char token[]) {
+    printf("%s: w1: %f,  w2: %f, b: %f\n", token, w1, w2, b);
 
     for (int i = 0; i < trainCount; i++) {
         float x1 = train[i][0];
         float x2 = train[i][1];
-        float yhat = (x1 * w1) + (x2 * w2);
+        float yhat = (x1 * w1) + (x2 * w2) + b;
         
         printf("Actual: %d, Predicted: %d\n", (int)round(train[i][2]), (int)round(yhat));
     }
@@ -61,22 +49,27 @@ void modelPerformance(float w1, float w2, char token[]) {
 
 void main() {
     srand(100);
-    float w1 = randomFloat()*10.0f;
-    float w2 = randomFloat()*10.0f;
+    float w1 = randomFloat();
+    float w2 = randomFloat();
+    float b = randomFloat();
+    float epsilon = 1e-3;
 
-    float dw1, dw2;
+    float dw1, dw2, db;
     float cost;
     float learningRate = 1e-3;
     int steps = 0;
 
-    modelPerformance(w1, w2, "Before");
+    modelPerformance(w1, w2, b, "Before");
     while (steps < 1000) {
-        dw1 = derivativeOf(costFunction, w1, w2, false);
-        dw2 = derivativeOf(costFunction, w1, w2, true);
+        float costwb = costFunction(w1, w2, b);
+        dw1 = (costFunction(w1 + epsilon, w2, b) - costwb) / epsilon;
+        dw2 = (costFunction(w1, w2 + epsilon, b) - costwb) / epsilon;
+        db = (costFunction(w1, w2, b + epsilon) - costwb) / epsilon;
         w1 -= (learningRate * dw1);
         w2 -= (learningRate * dw2);
+        b -= (learningRate * db);
         steps += 1;
 
     }
-    modelPerformance(w1, w2, "After");
+    modelPerformance(w1, w2, b, "After");
 }
