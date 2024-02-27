@@ -5,6 +5,7 @@ Two objectives for this project:
 2. Implement some principles of Machine Learning in C.
 
 Checkpoint of things done:
-[X] basic model with one parameter
-[ ] adding bias
+
+[x] basic model with one parameter
+[x] add bias
 [ ] XOR
