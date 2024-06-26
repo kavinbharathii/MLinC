@@ -63,6 +63,7 @@ void modelPerformance(float w) {
         
         printf("Actual: %4d, Predicted: %4d\n", (int)test[i][1], (int)yhat);
     }
+    printf("\n");
 }
 
 void main() {
